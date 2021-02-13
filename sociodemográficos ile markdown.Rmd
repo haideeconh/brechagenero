@@ -1,0 +1,221 @@
+---
+title: ¿Qué características tienen las mujeres que acudieron al servicio
+  de ILE durante 2016-2020 en México?
+author: "Haidee Bautista, Jennifer Gamoneda y Rocio Rojas"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Dada la situación actual en México donde se exacerba la necesidad de información que permita comprender el contexto en el que se posiciona la interrupción legal del embarazo es de suma importancia, pues la situación para las mujeres mexicanas no debe ser un _“tema a debatir”_ si no una situación a solucionar por lo que a continuación les traemos una  algunas estadísticas cuyo principal objetivo es visibilizar la situación actual del aborto en México. 
+
+## **Edad de las mujeres que acuden al servicio de ILE**
+
+### Las mujeres que acuden al servicio de ILE **no tienen una edad especifica**, pues acuden mujeres de todas las edades, _incluidas las niñas_, sin embargo, se puede observar que en promedio acuden mujeres de entre 25 a 30 años, como se muestra en la siguiente grafica.
+
+
+```{r, echo=FALSE, message=F}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(curso.feminismo.datos)
+ile <- curso.feminismo.datos::ile_data
+ile %>%
+  select(edad) %>%
+  count(edad) %>%
+  mutate(perc = n / nrow(ile)) -> ile_edad
+ile %>%
+  drop_na(edad) %>% 
+  ggplot(aes(x = edad)) + 
+  geom_histogram(aes(y =..density..), breaks = seq(10, 55, by = 1), 
+                 color = "#2a9d8f", fill = "#2a9d8f", alpha = 0.8) +
+  geom_density(alpha = 0.5, color = "#D3D3D3", fill = "#D3D3D3") +
+  geom_vline(aes(xintercept = mean(edad)), color = "#562457",
+             linetype = "dashed", size = 1) +
+  labs(title = "Edad de mujeres que optaron por una ILE, 2016-2020", x= "Edad", y = "") +
+  theme_classic()
+
+```
+
+## **Numero de hijos**
+
+### En la siguiente grafica se muestra que la mayoria de las mujeres tiene entre cero y un hijo, pero tambien pueden llegar a tener hasta 10 hijos.
+```{r, echo=FALSE, message=F}
+
+
+ile%>%
+  drop_na(nhijos) %>% 
+  ggplot(aes(x = nhijos)) + 
+  geom_histogram(aes(y =..density..), breaks = seq(0, 10, by = 1), 
+                 color = "#2a9d8f", fill = "#2a9d8f", alpha = 0.8) +
+  scale_x_continuous(n.breaks = 10) +
+  labs(title = "número de hijos de mujeres que optaron por una ILE, 2016-2020", x= "hijos", y = "") +
+  theme_classic() + coord_flip()
+
+```
+
+## **Escolaridad**
+
+### La mayoria de las mujeres que acudieron al servicio cuentan con nivel educativo **medio superior**, sin embargo, hay un porcentaje de mujeres que no registraron su nivel educativo.
+```{r, echo=FALSE, message=F}
+ile <- ile %>% 
+  mutate(nivel_edu2 = case_when(
+    nivel_edu == "LICENCIATURA" ~ "superior",
+    nivel_edu == "PREPARATORIA" ~ "media_superior",
+    nivel_edu == "SECUNDARIA" ~ "básica", 
+    nivel_edu == "PRIMARIA" ~ "básica",
+    nivel_edu == "MAESTRIA" ~ "superior", 
+    nivel_edu== "DOCTORADO" ~ "superior", 
+    nivel_edu== "SIN ACCESO A LA EDUCACION FORMAL" ~ "ninguna",
+    nivel_edu== "NA" ~ "na"
+  )) 
+ile %>% 
+  select(nivel_edu2) %>% 
+  count(nivel_edu2) %>% 
+  mutate(perc = n / nrow(ile)) -> ile_edu
+
+ggplot(ile_edu, aes(reorder(nivel_edu2, -perc), perc, fill = nivel_edu2)) +
+  geom_col() + 
+  scale_fill_manual(values = c("b?sica" = "#2a9134",
+                               "media superior" = "#137547",
+                               "superior" = "#3fa34d",
+                               "ninguna" = "#054a29"),
+                    na.value = "#5bba6f") +
+  ylab("") + labs(title = "Nivel educativo", subtitle = "en mujeres usuarias de ILE", x = "Nivel educativo") +
+  theme_classic() + coord_flip() + theme(legend.position = "none") 
+
+```
+
+## **Ocupación**
+
+### Se puede observar que la mayoría de las mujeres que acudieron al servicio se encontraban trabajando o eran estudiantes.
+```{r, echo=FALSE, message=F}
+
+ile <- ile %>% 
+  mutate(ocupacion2 = case_when(
+    ocupacion == "TRABAJADORA DEL HOGAR NO REMUNERADA" ~ "Hogar",
+    ocupacion == "EMPLEADA" ~ "Empleada",
+    ocupacion == "ESTUDIANTE" ~ "Estudiante", 
+    ocupacion == "DESEMPLEADA" ~ "Desempleada",
+    ocupacion == "NO ESPECIFICADO" ~ "no especificado", 
+    ocupacion == "<NA>" ~ "ninguna"
+    ))
+ile %>% 
+  select(ocupacion2) %>% 
+   count(ocupacion2) %>% 
+  mutate(perc = n / nrow(ile)) -> ile_ocup
+
+ggplot(ile_ocup, aes(reorder(ocupacion2, -perc), perc, fill = ocupacion2)) +
+  geom_col() + 
+  scale_fill_manual(values = c("Empleada" = "#2a9134",
+                               "Desempleada" = "#137547",
+                               "Estudiante" = "#3fa34d",
+                               "Hogar" = "#054a29",
+                    "no especificado" = "#5bba6f",
+                    na.value = "#5bba6f")) +
+  ylab("") + labs(title = "Ocupación", subtitle = "en mujeres usuarias de ILE", x = "Ocupacion") +
+  theme_classic() + coord_flip() + theme(legend.position = "none")
+
+```
+
+## **Estado civil**
+
+### Una de las características que más se observó fue que la mayoría de las mujeres eran **solteras** o vivían en unión libre.
+
+```{r, echo=FALSE, message=F}
+
+ile <- ile %>% 
+  mutate(edocivil_descripcion2 = case_when(
+    edocivil_descripcion == "SOLTERA" ~ "soltera",
+    edocivil_descripcion == "VIUDA" ~ "separada",
+    edocivil_descripcion == "UNION LIBRE" ~ "u libre", 
+    edocivil_descripcion == "CASADA" ~ "casada",
+    edocivil_descripcion == "SEPARADA" ~ "separada", 
+    edocivil_descripcion== "DIVORCIADA" ~ "separada", 
+    edocivil_descripcion== "<NA>" ~ "ninguna"
+    ))
+ile %>% 
+  select(edocivil_descripcion2) %>% 
+   count(edocivil_descripcion2) %>% 
+  mutate(perc = n / nrow(ile)) -> ile_edocivil
+
+ggplot(ile_edocivil, aes(reorder(edocivil_descripcion2, -perc), perc, fill = edocivil_descripcion2)) +
+  geom_col() + 
+  scale_fill_manual(values = c("soltera" = "#2a9134",
+                               "separada" = "#137547",
+                               "u libre" = "#3fa34d",
+                               "casada" = "#054a29"
+                    )) +
+  ylab("") + labs(title = "Estado civil", subtitle = "en mujeres usuarias de ILE de 2016-2020", x = "Estado civil") +
+  theme_classic() + coord_flip() + theme(legend.position = "none")
+```
+
+### El Artículo 4.º de la Constitución Política de los Estados Unidos Mexicanos, estipula que cada persona tiene el derecho a decidir de manera libre, responsable e informada así como el número y espaciamiento de sus hijos(as).
+
+### El uso de métodos anticonceptivos, forma parte importante de la planificación familiar así como de la salud sexual y reproductiva, en la actualidad el conocimiento de estos dota de un empoderamiento a las parejas lo cual les permite decidir y obtener la calidad de vida que desean.
+### En 2015 la  OMS señaló que promover y mejorar el acceso a métodos anticonceptivos, son tareas que permiten lograr múltiples beneficios. Entre ellos: prevenir riesgos para la salud en el embarazo; reducir la mortalidad infantil; prevenir el VIH; además, contribuye al poder de decisión; disminuye el embarazo adolescente y los niveles de crecimiento poblacional.
+
+## **Métodos anticonceptivos**
+
+### De acuerdo con los datos obtenidos, más del 40% de las mujeres no utilizó un método anticonceptivo antes de realizarse la ILE. De los métodos empleados, la mayoria utiliza el método de barrera ( _condón_), seguido del hormonal ( _pastillas, parches e inyecciones_), permanente ( _OTB y vasectomía_) y combinados el porcentaje es estadísticamente imperceptible. Comparado con los métodos anticonceptivos empleados se observa un mayor número de datos perdidos comparado con los métodos de larga duración. 
+
+```{r, echo=FALSE, message=F}
+
+ile <- ile %>% 
+ mutate(anticonceptivo2 = case_when(
+    anticonceptivo == "NINGUNO" ~ "ninguno",
+    anticonceptivo == "DIU" ~ "barrera",
+    anticonceptivo == "PASTILLA ANTICONCEPTIVA" ~ "hormonal", 
+    anticonceptivo == "PARCHES" ~ "hormonal",
+    anticonceptivo == "PASTILLA DE EMERGENCIA" ~ "hormonal", 
+    anticonceptivo == "IMPLANTE SUBDERMICO" ~ "hormonal", 
+    anticonceptivo == "CONDON" ~ "barrera",
+    anticonceptivo == "LIGADURA DE TROMPAS" ~ "permanente",
+    anticonceptivo == "CONDON + DIU" ~ "combinado",
+    anticonceptivo == "INYECCION + LIGADURA DE TROMPAS" ~ "combinado",
+    anticonceptivo == "ANILLO VAGINAL" ~ "hormonal",
+    anticonceptivo == "CONDON + IMPLANTE" ~ "combinado",
+    anticonceptivo == "VASECTOMIA" ~ "permanente",
+    anticonceptivo == "CONDON + PASTILLA ANTICONCEPTIVA" ~ "combinado",
+    anticonceptivo == "CONDON + INYECCION" ~ "combinado",
+    anticonceptivo == "INYECCION + DIU" ~ "combinado",
+    anticonceptivo == "CONDON + PARCHE" ~ "combinado",
+    anticonceptivo == "PASTILLA DE EMERGENCIA + INYECCION" ~ "combinado",
+    anticonceptivo == "PASTILLA DE EMERGENCIA + PARCHES" ~ "combinado",
+    anticonceptivo == "<NA>" ~ "no contesto")) 
+
+ile %>% 
+  select(anticonceptivo2) %>% 
+   count(anticonceptivo2) %>% 
+  mutate(perc = n / nrow(ile)) -> ile_anticoncp2
+
+ggplot(ile_anticoncp2, aes(reorder(anticonceptivo2, - perc), perc, fill = anticonceptivo2)) +
+  geom_col() + 
+  scale_fill_manual(values = c("ninguno" = "#3AB795",
+                               "barrera" = "#A0E8AF",
+                               "hormonal" = "#EDEAD0",
+                               "permanente" = "#86BAA1",
+                               "combinado" = "#86BAA1"),
+                               na.value = "#214F4B") +
+  scale_x_discrete("Tipo de método anticoncptivos") +     # configuración eje X (etiqueta del eje)
+  scale_y_continuous("Porcentaje",labels=scales::percent) +
+  labs(title = "Metodos anticonceptivos" ,
+       subtitle = "Usuarias de ILE 2016-2020")+
+  theme_minimal() + coord_flip() +
+  theme(legend.position = "none")
+```
+
+# Nivel educativo y número de hijos
+
+### Se puede observar que a menor educación, mayor número de hijos.
+
+```{r, echo=FALSE, message=F, results='hide'}
+
+ile %>%
+  ggplot(aes (reorder(nivel_edu2, -nhijos), nhijos,  fill=nivel_edu2)) +
+  geom_boxplot() + scale_fill_brewer(palette = "greens") +
+  labs(title = "Nivel educativo y número de hijos",
+       subtitle = "en mujeres que optaron por una ILE", x= "Nivel educativo", y= "Número de hijos") +
+    theme_classic() + theme(legend.position = "none")
+```
